@@ -27,7 +27,7 @@ class Scheda:
 
 
 
-token = "1336753758:AAHMkoEpI1S_DMSZI3M2LyOy_AP5KPyJp9A"
+token = open("token.txt", "r").readline()
 
 bot = telebot.TeleBot(token, False)
 
