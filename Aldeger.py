@@ -11,6 +11,7 @@ def extract_arg(arg):
     return arg[command_length:]
 
 error_message = "Questo è un messaggio di errore, se lo vedi significa che Bridge non mi ha programmato decentemente, per favore contatta @kiurem66"
+connection_error = "Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà"
 
 class NoArgumentsError(Exception):
     pass
@@ -49,9 +50,10 @@ def city(message):
         bot.send_photo(chat_id, photo=open("images/vivalon.jpg","rb"))
         bot.send_message(chat_id, "Questa è Vivalon, la nostra splendida città, in una foto scattata da me medesimo durante una gita in mongolfiera")
     except requests.exceptions.ConnectionError:
-        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
-    except:
+        bot.reply_to(message, connection_error)
+    except Exception as e:
         bot.reply_to(message, error_message)
+        print(e)
 
 @bot.message_handler(commands=["mercato"])
 def market(message):
@@ -60,9 +62,10 @@ def market(message):
         bot.send_photo(chat_id, photo=open("images/mercato.jpg","rb"))
         bot.send_message(chat_id, "Questo è il mercato cittadino, se hai bisogno di fare acquisti puoi dirigerti lì.\nPer farlo puoi passare di qui\n--->tg://join?invite=AAAAAFevPSByNw5y9nkasA")
     except requests.exceptions.ConnectionError:
-        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
-    except:
+        bot.reply_to(message,connection_error)
+    except Exception as e:
         bot.reply_to(message, error_message)
+        print(e)
 
 @bot.message_handler(commands=["torre"])
 def tower(message):
@@ -71,9 +74,10 @@ def tower(message):
         bot.send_photo(chat_id, photo=open("images/torre.jpg","rb"))
         bot.send_message(chat_id, "Questa è la misteriosa torre al centro di Vivalon, non sappiamo come sia stata costruita o perché la leggenda dica che ogni avventuriero che raggiunge il fondo vedrà un suo desiderio realzzato.\nUna cosa la sappiamo però, è piena di mostri pronti a farvi la pelle e di tesori da trovare.\n In caso descidiate di entrarvici... in bocca al Worg!")
     except requests.exceptions.ConnectionError:
-        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
-    except:
+        bot.reply_to(message,connection_error)
+    except Exception as e:
         bot.reply_to(message, error_message)
+        print(e)
 
 @bot.message_handler(commands={"roll", "r"})
 def rollbot(message):
@@ -89,18 +93,20 @@ def rollbot(message):
     except NoArgumentsError:
         bot.reply_to(message, "Signore, mi duole informarla che il modo in cui mi chiede di lanciare i dadi è errato.\nDovrebbe rispettare codesta sintassi:\n/roll d20\n/roll d20 + 5\n/roll 3d6")
     except requests.exceptions.ConnectionError:
-        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
-    except:
+        bot.reply_to(message,connection_error)
+    except Exception as e:
         bot.reply_to(message, error_message)
+        print(e)
 
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
         bot.reply_to(message, "lorem ipsum")
     except requests.exceptions.ConnectionError:
-        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
-    except:
+        bot.reply_to(message,connection_error)
+    except Exception as e:
         bot.reply_to(message, error_message)
+        print(e)
 
 print("Aldeger is running")
 while True:
