@@ -77,7 +77,7 @@ def deluser(message):
         except:
             bot.reply_to(message, "ATTENZIONE, mi sta chiedendo di eliminare il suo profilo, questo eliminerà anche la sua scheda.\n se è sicuro ripeta il comando con l'aggiunta di YES in questo modo.\n /deluser YES")            
     else:
-        bot.reply_to("Mi dispiace, non posso dimenticarmi di qualcuno che già non conosco")
+        bot.reply_to(message, "Mi dispiace, non posso dimenticarmi di qualcuno che già non conosco")
 
 @bot.message_handler(commands=["admin"])
 def admin(message):
@@ -137,7 +137,6 @@ def tower(message):
 def rollbot(message):
     try:
         command = message.text
-        id_chat = message.chat.id
         to_parse = extract_arg(command) + "+0"
         result = dice.roll(to_parse.strip())
         to_send = "I dadi hanno detto " + str(result)
