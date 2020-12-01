@@ -31,7 +31,7 @@ logger = telebot.logger
 formatter = logging.Formatter('[%(asctime)s] %(thread)d {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 ch = logging.StreamHandler(sys.stdout)
 logger.addHandler(ch)
-logger.setLevel(logging.info)  # or use logging.INFO
+logger.setLevel(logging.INFO)  # or use logging.INFO
 ch.setFormatter(formatter)
 
 token = open("token.txt", "r").readline()
@@ -59,6 +59,17 @@ def market(message):
         chat_id = message.chat.id
         bot.send_photo(chat_id, photo=open("images/mercato.jpg","rb"))
         bot.send_message(chat_id, "Questo è il mercato cittadino, se hai bisogno di fare acquisti puoi dirigerti lì.\nPer farlo puoi passare di qui\n--->tg://join?invite=AAAAAFevPSByNw5y9nkasA")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
+    except:
+        bot.reply_to(message, error_message)
+
+@bot.message_handler(commands=["torre"])
+def tower(message):
+    try:
+        chat_id = message.chat.id
+        bot.send_photo(chat_id, photo=open("images/torre.jpg","rb"))
+        bot.send_message(chat_id, "Questa è la misteriosa torre al centro di Vivalon, non sappiamo come sia stata costruita o perché la leggenda dica che ogni avventuriero che raggiunge il fondo vedrà un suo desiderio realzzato.\nUna cosa la sappiamo però, è piena di mostri pronti a farvi la pelle e di tesori da trovare.\n In caso descidiate di entrarvici... in bocca al Worg!")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
     except:
