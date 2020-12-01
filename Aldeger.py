@@ -78,7 +78,17 @@ def deluser(message):
             bot.reply_to(message, "ATTENZIONE, mi sta chiedendo di eliminare il suo profilo, questo eliminerà anche la sua scheda.\n se è sicuro ripeta il comando con l'aggiunta di YES in questo modo.\n /deluser YES")            
     else:
         bot.reply_to("Mi dispiace, non posso dimenticarmi di qualcuno che già non conosco")
-        
+
+@bot.message_handler(commands=["admin"])
+def admin(message):
+    to_send = message.text[7:]
+    if len(to_send) == 0:
+        bot.send_message(640632571, message.from_user.first_name + " ha pingato gli admin")
+        bot.send_message(607608190, message.from_user.first_name + " ha pingato gli admin")
+    else:
+        bot.send_message(640632571, message.from_user.first_name + " ha scritto " + to_send)
+        bot.send_message(607608190, message.from_user.first_name + " ha scritto " + to_send)
+
 @bot.message_handler(commands=["register"])
 def register(message):
     if isUser(message.from_user.id):
