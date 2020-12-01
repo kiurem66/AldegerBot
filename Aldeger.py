@@ -28,11 +28,10 @@ class Scheda:
 
 
 logger = telebot.logger
-formatter = logging.Formatter('[%(asctime)s] %(thread)d {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
-                                  '%m-%d %H:%M:%S')
+formatter = logging.Formatter('[%(asctime)s] %(thread)d {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 ch = logging.StreamHandler(sys.stdout)
 logger.addHandler(ch)
-logger.setLevel(logging.DEBUG)  # or use logging.INFO
+logger.setLevel(logging.info)  # or use logging.INFO
 ch.setFormatter(formatter)
 
 token = open("token.txt", "r").readline()
@@ -86,7 +85,7 @@ def rollbot(message):
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
-        bot.reply_to(message, "TODO")
+        bot.reply_to(message, "lorem ipsum")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,"Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà")
     except:
