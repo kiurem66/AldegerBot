@@ -16,6 +16,12 @@ def isUser(user_id):
             return True
     return False
 
+def isAdmin(user_id):
+    if(user_id == 607608190 or user_id == 640632571): #add other admin
+        return True
+    return False
+
+
 error_message = "Questo è un messaggio di errore, se lo vedi significa che Bridge non mi ha programmato decentemente, per favore contatta @kiurem66"
 connection_error = "Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà"
 user_error = "Signore/a, mi duole informarla che non ho capito cosa intende, forse sta usando il comando in modo errato?"
@@ -36,10 +42,17 @@ class CharSheet:
 
 
 class User:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
+        self.name = name
         self.sheet = None
         self.refMaster = None
+        self.strike = 0
+    def give_strike(self):
+        self.strike += 1
+        if self.strike == 3:
+            return True
+        return False
 
 
 logger = telebot.logger
@@ -94,7 +107,7 @@ def register(message):
     if isUser(message.from_user.id):
         bot.reply_to(message, "Oh... signore/a la conosco bene, credeva forse che mi dimenticassi di lei? Nel caso lo volesse veramente, usi il comando /deluser")
     else:
-        users.append(User(message.from_user.id))
+        users.append(User(message.from_user.id, message.from_user.first_name))
         bot.reply_to(message, "Capito, da questo momento mi ricorderò di lei.\nIn caso voglia creare un personaggio usi il comando /newchara, ma le consiglio di parlarne con me in un luogo più privato.")
 
 @bot.message_handler(commands=["vivalon"])
@@ -161,9 +174,64 @@ def help(message):
         bot.reply_to(message, error_message)
         print(e)
 
+@bot.message_handler(commands={"ban"})
+def ban(message):
+    try:
+        if isAdmin(message.from_user.id):
+            to_ban = extract_arg(message.text)
+            chat_id = message.chat.id
+            ban_id = 0
+            for u in users:
+                if u.name == to_ban:
+                    ban_id = u.id
+                    users.remove(u)
+                    break
+            if ban_id == 0:
+                bot.reply_to(message, "Mi dispiace signore ma l'utente non è registrato, dovrà rimuoverlo lei")
+            else:
+                bot.reply_to(message, "COMANDO RICEVUTO\nAVVIO OMICIDIO.EXE\n\n*Prende una doppietta*\nMi dispiace " + to_ban +", ma devo rimuoverle i suoi privilegi di vita.")
+                bot.kick_chat_member(chat_id, ban_id, 0)
+        else:
+            bot.reply_to(message, "Mi perdoni signore/a, ma lei non è autorizzato/a ad utilizzare questo comando.")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message, connection_error)
+    except NoArgumentsError:
+         bot.reply_to(message, user_error)
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
 
+@bot.message_handler(commands={"strike"})
+def strike(message):
+    try:
+        if isAdmin(message.from_user.id):
+            to_ban = extract_arg(message.text)
+            chat_id = message.chat.id
+            ban_id = 0
+            for u in users:
+                if u.name == to_ban:
+                    ban_id = u.id
+                    if u.give_strike():
+                        bot.reply_to(message, "COMANDO RICEVUTO\nAVVIO OMICIDIO.EXE\n\n*Prende una doppietta*\nMi dispiace " + to_ban +", ma lei ha raggiunto 3 strike e devo rimuoverle i suoi privilegi di vita.")
+                        bot.kick_chat_member(chat_id, ban_id, 0)
+                        users.remove(u)
+                    else:
+                        bot.reply_to(message, "Strike inviato, " + str(u.name) + " è a " + str(u.strike) + " strike, a 3 strike verrà bannato.")
+                    break
+            if ban_id == 0:
+                bot.reply_to(message, "Mi dispiace signore ma l'utente non è registrato.")
+        else:
+            bot.reply_to(message, "Mi perdoni signore/a, ma lei non è autorizzato/a ad utilizzare questo comando.")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message,connection_error)
+    except NoArgumentsError:
+         bot.reply_to(message, user_error)
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
 
-
+for u in users:
+    print(u.name)
 print("Aldeger is running")
 while True:
     bot.polling(none_stop=True)
