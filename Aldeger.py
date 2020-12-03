@@ -4,6 +4,9 @@ import sys
 import requests
 import logging
 
+group_id = -448687865
+admins = [607608190, 640632571]
+
 def extract_arg(arg):
     command_length = len(arg.split()[0])
     if len(arg) == command_length:
@@ -17,8 +20,9 @@ def isUser(user_id):
     return False
 
 def isAdmin(user_id):
-    if(user_id == 607608190 or user_id == 640632571): #add other admin
-        return True
+    for id in admins:
+        if user_id == id:
+            return True
     return False
 
 
@@ -229,6 +233,21 @@ def strike(message):
     except Exception as e:
         bot.reply_to(message, error_message)
         print(e)
+
+@bot.message_handler(commands={"saytogroup"})
+def say(message):
+    if isAdmin(message.from_user.id):
+        try:
+            to_say = extract_arg(message.text)
+            bot.send_message(group_id, to_say)
+        except requests.exceptions.ConnectionError:
+            bot.reply_to(message,connection_error)
+        except NoArgumentsError:
+            bot.reply_to(message, user_error)
+        except Exception as e:
+            bot.reply_to(message, error_message)
+            print(e)
+
 
 for u in users:
     print(u.name)
