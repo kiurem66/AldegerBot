@@ -3,9 +3,18 @@ import dice
 import sys
 import requests
 import logging
+import math
 
 group_id = -448687865
 admins = [607608190, 640632571]
+
+def my_round(number):
+    decimal = number - int(number)
+    if decimal < 0.5:
+        return int(number)
+    else:
+        return int(number)+1
+
 
 def extract_arg(arg):
     command_length = len(arg.split()[0])
@@ -24,6 +33,100 @@ def isAdmin(user_id):
         if user_id == id:
             return True
     return False
+
+def atkCalc(lvl, type):
+    base = ""
+    if lvl <= 10:
+        offset = -int((10-lvl)/2)
+        base = "1d6"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    elif lvl <= 250:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round(lvl/10)
+        offset = math.ceil((lvl - dice_number*10) / 2)
+        base = str(dice_number)+"d6+0"+str(offset)
+    elif lvl <= 260:
+        offset = -int((260-lvl)/2)
+        base = "8d20"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    elif lvl <= 400:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round((lvl-250)/10) + 7
+        offset = math.ceil((lvl - my_round(lvl/10)*10) / 2)
+        base = str(dice_number)+"d20+0"+str(offset)
+    elif lvl <= 410:
+        offset = -int((410-lvl)/2)
+        base = "15d30"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    elif lvl <= 600:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round((lvl-400)/10) + 14
+        offset = math.ceil((lvl - my_round(lvl/10)*10) / 2)
+        base = str(dice_number)+"d30+0"+str(offset)
+    elif lvl <= 610:
+        offset = -int((610-lvl)/2)
+        base = "18d60"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    elif lvl <= 800:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round((lvl-600)/10) + 17
+        offset = math.ceil((lvl - my_round(lvl/10)*10) / 2)
+        base = str(dice_number)+"d60+0"+str(offset)
+    elif lvl <= 810:
+        offset = -int((810-lvl)/2)
+        base = "23d100"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    elif lvl <= 900:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round((lvl-800)/10) + 22
+        offset = math.ceil((lvl - my_round(lvl/10)*10) / 2)
+        base = str(dice_number)+"d100+0"+str(offset)
+    elif lvl <= 910:
+        offset = -int((910-lvl)/2)
+        base = "28d120"+str(offset)
+        if type == "i":
+            base+="-1"
+        elif type == "a":
+            base += "-2"
+    else:
+        if type == "i":
+            lvl -= 2
+        elif type == "a":
+            lvl -= 4
+        dice_number = my_round((lvl-900)/10) + 27
+        offset = math.ceil((lvl - my_round(lvl/10)*10) / 2)
+        base = str(dice_number)+"d120+0"+str(offset)
+    return base
 
 
 error_message = "Questo è un messaggio di errore, se lo vedi significa che Bridge non mi ha programmato decentemente, per favore contatta @kiurem66"
