@@ -16,7 +16,6 @@ def my_round(number):
     else:
         return int(number)+1
 
-
 def extract_arg(arg):
     command_length = len(arg.split()[0])
     if len(arg) == command_length:
@@ -137,7 +136,6 @@ user_error = "Signore/a, mi duole informarla che non ho capito cosa intende, for
 class NoArgumentsError(Exception):
     pass
 
-
 class CharSheet:
     def __init__(self, strength = 0, dexterity = 0, intelligence = 0, health = 0):
         self.strength = strength
@@ -154,6 +152,7 @@ class CharSheet:
         self.weapons = []
         self.armors = []
         self.items = []
+        self.platinum = 0
         self.gold = 0
         self.silver = 0
         self.copper = 0
@@ -201,9 +200,6 @@ class User:
             return True
         return False
 
-
-
-
 class Attack:
     def __init__(self, name, level, atype):
         self.name = name
@@ -212,6 +208,11 @@ class Attack:
     def rolldamage(self):
         to_roll = atkCalc(self.level, self.atype)
         return dice.roll(to_roll)
+
+class Ability:
+    def __init__(self, name, level):
+        self.name = name
+        self.level = level
 
 
 logger = telebot.logger
@@ -228,7 +229,7 @@ editingSheetUsers = []
 
 #handlers
 @bot.message_handler(content_atypes=["new_chat_members"])
-def foo(message):
+def newuser(message):
     if isUser(message.from_user.id):
         bot.reply_to(message, "Bentornato alla locanda " + message.from_user.username+ "!")
     else:
@@ -328,7 +329,7 @@ def rollbot(message):
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
-        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente")
+        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,connection_error)
     except Exception as e:
@@ -561,7 +562,7 @@ def givexp(message):
 @bot.message_handler(commands={"helpedit"})
 def helpedit(message):
     try:
-        bot.reply_to(message, "/newchara: crea un nuovo personaggio ed entra in modalità modifica\n\n/editchara: entra in modalità modifica\n\n/addatk <nome> <livello> <tipo>: aggiunge un attacco di tipo f, a, i\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non venono salvate verranno usate le vecchie caratteristiche")
+        bot.reply_to(message, "/newchara: crea un nuovo personaggio ed entra in modalità modifica\n\n/editchara: entra in modalità modifica\n\n/addatk <nome> <livello> <tipo>: aggiunge un attacco di tipo f, a, i\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non vengono salvate verranno usate le vecchie caratteristiche")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message, connection_error)
     except NoArgumentsError:
@@ -572,9 +573,41 @@ def helpedit(message):
         bot.reply_to(message, error_message)
         print(e)
 
+@bot.message_handler(commands={"showchara"})
+def showchara(message):
+    try:
+        found = False
+        for u in users:
+            if u.id == message.from_user.id:
+                found = True
+                if u.sheet == None:
+                    bot.reply_to(message, "Mi dispiace ma lei non ha alcuna scheda personaggio, può crearla con il comando /newchara")
+                    break
+                to_print = "---Scheda Personaggio---\n\n"
+                to_print += "Nome: " + u.sheet.name + "\nRazza: " + u.sheet.race + "\nClasse: " + u.sheet.aclass + "\nSesso: " + u.sheet.sex + "\nAltezza: " + u.sheet.height + "\nPeso: " + u.sheet.weight + "\n\n"
+                to_print += "Caratteristiche\nFOR: " + str(u.sheet.strength) + "\nDES: " + str(u.sheet.dexterity) + "\nINT: " + str(u.sheet.intelligence) + "\nSAL: " + str(u.sheet.health) + "\n\n"
+                to_print += "Attacchi:\n"
+                to_print += "Costituzione: " + u.sheet.constitution + "\nVelocità base: " + u.sheet.base_speed + "\nSchivata: " + u.sheet.dodge + "\nMovimento: " + u.sheet.movement + "\nParata: " + u.sheet.parry + "\nBlocco: " + u.sheet.block + "\nAzioni: " + u.sheet.actions + "\n\n"
+                for a in u.sheet.attacks:
+                    to_print += a.name + " lv: " + a.level + " tipo: " + a.atype + "\n"
+                to_print += "\n"
+                for a in u.sheet.abilities:
+                    to_print += a.name + " lv: " + a.level + "\n"
+                to_print += "\nCuori: " + u.sheet.platinum + "\nFiorini: " + u.sheet.gold + "\nPunte: " + u.sheet.silver + "\nQuarti: " +u.sheet.copper
+                bot.reply_to(message, to_print)
+                break
+        if not found:
+            bot.reply_to(message, "Mi dispiace ma lei non è registrato/a, deve usare il comando /register per poter creare un personaggio")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message, connection_error)
+    except NoArgumentsError:
+        bot.reply_to(message, user_error)
+    except ValueError:
+        bot.reply_to(message, user_error)
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
 
-for u in users:
-    print(u.name)
 print("Aldeger is running")
 while True:
     bot.polling(none_stop=True)
