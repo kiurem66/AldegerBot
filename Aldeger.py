@@ -7,7 +7,8 @@ import math
 import copy
 
 group_id = -448687865
-admins = [607608190, 640632571]
+admins = [607608190, 640632571, 198257047]
+version = "0.2"
 
 def my_round(number):
     decimal = number - int(number)
@@ -129,8 +130,8 @@ def atkCalc(lvl, atype):
     return base
 
 
-error_message = "Questo è un messaggio di errore, se lo vedi significa che Bridge non mi ha programmato decentemente, per favore contatta @kiurem66"
-connection_error = "Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di rinivare il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà"
+error_message = "Questo è un messaggio di errore, se lo sta vedendo significa che il dottor Bridge non mi ha programmato in modo adeguato, per favore contatti @kiurem66"
+connection_error = "Oh no, sembra che io abbia dei problemi di connessione, le chiedo cortesemente di inivare nuovamente il suo comando.\nIn caso questo errore si dovesse verificare troppo spesso le chiedo gentilmente di contattare @kiurem66, potrebbe esserci qualche errore più grave in realtà"
 user_error = "Signore/a, mi duole informarla che non ho capito cosa intende, forse sta usando il comando in modo errato?"
 
 class NoArgumentsError(Exception):
@@ -233,7 +234,7 @@ def newuser(message):
     if isUser(message.from_user.id):
         bot.reply_to(message, "Bentornato alla locanda " + message.from_user.username+ "!")
     else:
-        bot.reply_to(message, "Bevenuto alla mia locanda " + message.from_user.username + "\nIl mio nome è Aldeger e sono l'oste, la prego di leggere il regolamento qui sotto linkato. <link regolamento>, io la assisterò nella gestione della scheda e nel tiro dei dadi. \npuò usare /help per scoprire i miei comandi.\nPer registrarsi usi /register \n\nAldeger Nothing v0.1.0BETA, magirobot programmato dal professor Bridge")
+        bot.reply_to(message, "Bevenuto alla mia locanda " + message.from_user.username + "\nIl mio nome è Aldeger e sono l'oste, la prego di leggere il regolamento qui sotto linkato. <link regolamento>, io la assisterò nella gestione della scheda e nel tiro dei dadi. \npuò usare /help per scoprire i miei comandi.\nPer registrarsi usi /register \n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
 
 @bot.message_handler(commands=["deluser"])
 def deluser(message):
@@ -258,11 +259,11 @@ def deluser(message):
 def admin(message):
     to_send = message.text[7:]
     if len(to_send) == 0:
-        bot.send_message(640632571, message.from_user.username + " ha pingato gli admin")
-        bot.send_message(607608190, message.from_user.username + " ha pingato gli admin")
+        for a in admins:
+            bot.send_message(a, message.from_user.username + " ha pingato gli admin")
     else:
-        bot.send_message(640632571, message.from_user.username + " ha scritto " + to_send)
-        bot.send_message(607608190, message.from_user.username + " ha scritto " + to_send)
+        for a in admins:
+            bot.send_message(a, message.from_user.username + " ha scritto " + to_send)
 
 @bot.message_handler(commands=["register"])
 def register(message):
@@ -329,7 +330,7 @@ def rollbot(message):
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
-        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.")
+        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.\n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,connection_error)
     except Exception as e:
@@ -587,13 +588,13 @@ def showchara(message):
                 to_print += "Nome: " + u.sheet.name + "\nRazza: " + u.sheet.race + "\nClasse: " + u.sheet.aclass + "\nSesso: " + u.sheet.sex + "\nAltezza: " + u.sheet.height + "\nPeso: " + u.sheet.weight + "\n\n"
                 to_print += "Caratteristiche\nFOR: " + str(u.sheet.strength) + "\nDES: " + str(u.sheet.dexterity) + "\nINT: " + str(u.sheet.intelligence) + "\nSAL: " + str(u.sheet.health) + "\n\n"
                 to_print += "Attacchi:\n"
-                to_print += "Costituzione: " + u.sheet.constitution + "\nVelocità base: " + u.sheet.base_speed + "\nSchivata: " + u.sheet.dodge + "\nMovimento: " + u.sheet.movement + "\nParata: " + u.sheet.parry + "\nBlocco: " + u.sheet.block + "\nAzioni: " + u.sheet.actions + "\n\n"
+                to_print += "Costituzione: " + str(u.sheet.constitution) + "\nVelocità base: " + str(u.sheet.base_speed) + "\nSchivata: " + str(u.sheet.dodge) + "\nMovimento: " + str(u.sheet.movement) + "\nParata: " + str(u.sheet.parry) + "\nBlocco: " + str(u.sheet.block) + "\nAzioni: " + str(u.sheet.actions) + "\n\n"
                 for a in u.sheet.attacks:
-                    to_print += a.name + " lv: " + a.level + " tipo: " + a.atype + "\n"
+                    to_print += a.name + " lv: " + str(a.level) + " tipo: " + a.atype + "\n"
                 to_print += "\n"
                 for a in u.sheet.abilities:
-                    to_print += a.name + " lv: " + a.level + "\n"
-                to_print += "\nCuori: " + u.sheet.platinum + "\nFiorini: " + u.sheet.gold + "\nPunte: " + u.sheet.silver + "\nQuarti: " +u.sheet.copper
+                    to_print += a.name + " lv: " + str(a.level) + "\n"
+                to_print += "\nCuori: " + str(u.sheet.platinum) + "\nFiorini: " + str(u.sheet.gold) + "\nPunte: " + str(u.sheet.silver) + "\nQuarti: " +str(u.sheet.copper)
                 bot.reply_to(message, to_print)
                 break
         if not found:
