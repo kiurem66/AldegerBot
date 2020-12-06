@@ -5,6 +5,7 @@ import requests
 import logging
 import math
 import copy
+import pickle
 
 group_id = -448687865
 admins = [607608190, 640632571, 198257047]
@@ -149,7 +150,7 @@ class CharSheet:
         self.movement = int(self.base_speed)
         self.parry = (health + strength)/4
         self.actions = 2
-        self.abilities = []
+        self.skills = []
         self.weapons = []
         self.armors = []
         self.items = []
@@ -210,7 +211,7 @@ class Attack:
         to_roll = atkCalc(self.level, self.atype)
         return dice.roll(to_roll)
 
-class Ability:
+class Skill:
     def __init__(self, name, level):
         self.name = name
         self.level = level
@@ -220,7 +221,7 @@ logger = telebot.logger
 formatter = logging.Formatter('[%(asctime)s] %(thread)d {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 ch = logging.StreamHandler(sys.stdout)
 logger.addHandler(ch)
-logger.setLevel(logging.INFO)  # or use logging.INFO
+logger.setLevel(logging.INFO)  # or use logging.DEBUG
 ch.setFormatter(formatter)
 token = open("token.txt", "r").readline()
 bot = telebot.TeleBot(token, False)
@@ -267,11 +268,18 @@ def admin(message):
 
 @bot.message_handler(commands=["register"])
 def register(message):
-    if isUser(message.from_user.id):
-        bot.reply_to(message, "Oh... signore/a la conosco bene, credeva forse che mi dimenticassi di lei? Nel caso lo volesse veramente, usi il comando /deluser")
-    else:
-        users.append(User(message.from_user.id, message.from_user.username))
-        bot.reply_to(message, "Capito, da questo momento mi ricorderò di lei.\nIn caso voglia creare un personaggio usi il comando /newchara, ma le consiglio di parlarne con me in un luogo più privato.")
+    try:
+        if isUser(message.from_user.id):
+            bot.reply_to(message, "Oh... signore/a la conosco bene, credeva forse che mi dimenticassi di lei? Nel caso lo volesse veramente, usi il comando /deluser")
+        else:
+            users.append(User(message.from_user.id, message.from_user.username))
+            bot.reply_to(message, "Capito, da questo momento mi ricorderò di lei.\nIn caso voglia creare un personaggio usi il comando /newchara, ma le consiglio di parlarne con me in un luogo più privato.")
+            f = open("users","wb")
+            pickle.dump(users, f)
+            f.close()
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
 
 @bot.message_handler(commands=["vivalon"])
 def city(message):
@@ -430,20 +438,26 @@ def newchara(message):
 
 @bot.message_handler(commands={"savechara"})
 def savechara(message):
-    found = False
-    for u in editingSheetUsers:
-        if u.id == message.from_user.id:
-            found = True
-            for u1 in users:
-                if u1.id == u.id:
-                    users.remove(u1)
-                    break
-            users.append(u)
-            bot.reply_to(message,"Modifiche salvate, se vuole riprendere a modificare si /editchara")
-            #codice per salvare
-            break
-    if not found:
-        bot.reply_to(message,"Lei non è registrato/a o non sta modificando lo scheda. Per entrare in modalità modifica usi /editchara")
+    try:
+        found = False
+        for u in editingSheetUsers:
+            if u.id == message.from_user.id:
+                found = True
+                for u1 in users:
+                    if u1.id == u.id:
+                        users.remove(u1)
+                        break
+                users.append(u)
+                f = open("users","wb")
+                pickle.dump(users, f)
+                f.close()
+                bot.reply_to(message,"Modifiche salvate, se vuole riprendere a modificare si /editchara")
+                break
+        if not found:
+            bot.reply_to(message,"Lei non è registrato/a o non sta modificando lo scheda. Per entrare in modalità modifica usi /editchara")
+    except Exception as e:
+            bot.reply_to(message, error_message)
+            print(e)
 
 @bot.message_handler(commands={"discardedit"})
 def discardedit(message):
@@ -483,19 +497,24 @@ def addAttack(message):
     try:
         for u in editingSheetUsers:    
             if u.id == message.from_user.id:
-                args = extract_arg(message.text).split()
-                name = args[0]
-                lvl = int(args[1])
-                atype = args[2]
+                args = extract_arg(message.text).split(",")
+                try:
+                    name = args[0]
+                    lvl = int(args[1].strip())
+                except:
+                    raise NoArgumentsError
+                atype = args[2].strip()
                 if (atype != "i" and atype != "f" and atype != "i") or lvl<1:
                     bot.reply_to(message, user_error)
                     break
+                '''
                 if u.sheet.xp < lvl:
                     bot.reply_to(message, "I suoi XP sono insufficienti")
                     break
+                u.sheet.xp -= lvl
+                '''
                 to_add = Attack(name, lvl, atype)
                 u.sheet.attacks.append(to_add)
-                u.sheet.xp -= lvl
                 bot.reply_to(message, "attacco " + name + " aggiunto")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message, connection_error)
@@ -536,9 +555,12 @@ def rollDmg(message):
 def givexp(message):
     try:
         if isAdmin(message.from_user.id):
-            args = extract_arg(message.text).split()
-            name = args[0]
-            to_give = int(args[1])
+            args = extract_arg(message.text).split(",")
+            try:
+                name = args[0]
+                to_give = int(args[1].strip())
+            except:
+                raise NoArgumentsError
             found = False
             for u in users:
                 if u.name == name:
@@ -563,7 +585,7 @@ def givexp(message):
 @bot.message_handler(commands={"helpedit"})
 def helpedit(message):
     try:
-        bot.reply_to(message, "/newchara: crea un nuovo personaggio ed entra in modalità modifica\n\n/editchara: entra in modalità modifica\n\n/addatk <nome> <livello> <tipo>: aggiunge un attacco di tipo f, a, i\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non vengono salvate verranno usate le vecchie caratteristiche")
+        bot.reply_to(message, "/newchara: crea un nuovo personaggio ed entra in modalità modifica\n\n/editchara: entra in modalità modifica\n\n/addatk <nome>,<livello>,<tipo>: aggiunge un attacco di tipo f, a, i\n\n/addskill <nome>,<livello> aggiunge un abilità\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non vengono salvate verranno usate le vecchie caratteristiche")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message, connection_error)
     except NoArgumentsError:
@@ -585,14 +607,15 @@ def showchara(message):
                     bot.reply_to(message, "Mi dispiace ma lei non ha alcuna scheda personaggio, può crearla con il comando /newchara")
                     break
                 to_print = "---Scheda Personaggio---\n\n"
-                to_print += "Nome: " + u.sheet.name + "\nRazza: " + u.sheet.race + "\nClasse: " + u.sheet.aclass + "\nSesso: " + u.sheet.sex + "\nAltezza: " + u.sheet.height + "\nPeso: " + u.sheet.weight + "\n\n"
+                to_print += "Nome: " + u.sheet.name + "\nRazza: " + u.sheet.race + "\nClasse: " + u.sheet.aclass + "\nSesso: " + u.sheet.sex + "\nAltezza: " + str(u.sheet.height) + "\nPeso: " + str(u.sheet.weight) + "\n\n"
                 to_print += "Caratteristiche\nFOR: " + str(u.sheet.strength) + "\nDES: " + str(u.sheet.dexterity) + "\nINT: " + str(u.sheet.intelligence) + "\nSAL: " + str(u.sheet.health) + "\n\n"
-                to_print += "Attacchi:\n"
                 to_print += "Costituzione: " + str(u.sheet.constitution) + "\nVelocità base: " + str(u.sheet.base_speed) + "\nSchivata: " + str(u.sheet.dodge) + "\nMovimento: " + str(u.sheet.movement) + "\nParata: " + str(u.sheet.parry) + "\nBlocco: " + str(u.sheet.block) + "\nAzioni: " + str(u.sheet.actions) + "\n\n"
+                to_print += "Attacchi:\n"
                 for a in u.sheet.attacks:
                     to_print += a.name + " lv: " + str(a.level) + " tipo: " + a.atype + "\n"
                 to_print += "\n"
-                for a in u.sheet.abilities:
+                to_print += "Abilità:\n"
+                for a in u.sheet.skills:
                     to_print += a.name + " lv: " + str(a.level) + "\n"
                 to_print += "\nCuori: " + str(u.sheet.platinum) + "\nFiorini: " + str(u.sheet.gold) + "\nPunte: " + str(u.sheet.silver) + "\nQuarti: " +str(u.sheet.copper)
                 bot.reply_to(message, to_print)
@@ -608,6 +631,69 @@ def showchara(message):
     except Exception as e:
         bot.reply_to(message, error_message)
         print(e)
+
+@bot.message_handler(commands={"editchara"})
+def editchara(message):
+    try:
+        found = False
+        for u in users:
+            if u.id == message.from_user.id:
+                found = True
+                if u.sheet == None:
+                    bot.reply_to(message, "Mi dispiace ma lei non ha alcuna scheda personaggio, può crearla con il comando /newchara")
+                else:
+                    editingSheetUsers.append(copy.deepcopy(u))
+                    bot.reply_to(message, "Modalità modifica attivata. Le consiglio di modificare le sue caratteristiche in privato o in un gruppo insieme ad un master. Per avere più informazioni sui comandi per la modifica dei personaggi usi il comando /helpedit")
+                break
+        if not found:
+            bot.reply_to(message, "Mi dispiace ma lei non è registrato/a, deve usare il comando /register per poter creare un personaggio")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message, connection_error)
+    except NoArgumentsError:
+        bot.reply_to(message, user_error)
+    except ValueError:
+        bot.reply_to(message, user_error)
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
+
+@bot.message_handler(commands={"addskill"})
+def addskill(message):
+    try:
+        for u in editingSheetUsers:    
+            if u.id == message.from_user.id:
+                args = extract_arg(message.text).split(",")
+                try:
+                    name = args[0]
+                    lvl = int(args[1].strip())
+                except:
+                    raise NoArgumentsError
+                '''
+                if u.sheet.xp < lvl:
+                    bot.reply_to(message, "I suoi XP sono insufficienti")
+                    break
+                u.sheet.xp -= lvl
+                '''
+                to_add = Skill(name, lvl)
+                u.sheet.skills.append(to_add)
+                bot.reply_to(message, "abilità " + name + " aggiunta")
+    except requests.exceptions.ConnectionError:
+        bot.reply_to(message, connection_error)
+    except NoArgumentsError:
+        bot.reply_to(message, user_error)
+    except ValueError:
+        bot.reply_to(message, user_error)
+    except Exception as e:
+        bot.reply_to(message, error_message)
+        print(e)
+
+
+try:
+    f = open("users","rb")
+    users = pickle.load(f)
+    f.close()
+except:
+    users = []
 
 print("Aldeger is running")
 while True:
