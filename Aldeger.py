@@ -337,7 +337,7 @@ def rollbot(message):
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
-        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/editmoney <tipo><numero> si possono aggiungere o togliere monete di tipo c,f,p,q (si ha completa libertà, evitare di andare in negativo o di aggiungersi troppe monete, può risultare in uno strike)\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\n/showchara mostra la sua scheda (se non vuole che gli altri giocatori la vedono le condsiglio di farlo in privato)\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.\n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
+        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/newchara <nome>,<forza>,<destrezza>,<intelligenza>: crea un nuovo personaggio ed entra in modalità modifica(la somma delle 4 caratteristiche deve essere 45)\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/editmoney <tipo><numero> si possono aggiungere o togliere monete di tipo c,f,p,q (si ha completa libertà, evitare di andare in negativo o di aggiungersi troppe monete, può risultare in uno strike)\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\n/showchara mostra la sua scheda (se non vuole che gli altri giocatori la vedono le condsiglio di farlo in privato)\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.\n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,connection_error)
     except Exception as e:
@@ -580,7 +580,7 @@ def givexp(message):
 @bot.message_handler(commands={"helpedit"})
 def helpedit(message):
     try:
-        bot.reply_to(message, "/newchara: crea un nuovo personaggio ed entra in modalità modifica\n\n/editchara: entra in modalità modifica\n\n/addatk <nome>,<caratteristica>,<tipo>: aggiunge un attacco di tipo f, a, i. Con una caratteristica base\n\n/addskill <nome>,<livello> aggiunge un abilità\n\n/lvlskill <skill>: aumenta il livello di una skill\n\n/lvlcar <car> aumenta il livello di una caratteristica base (f,d,i,s)\n\n/buyaction: spende punti xp per comprare un azione\n\n/setrace <razza>: imposta la razza\n\n/setclass: imposta la classe\n\n/setsex: imposta il sesso\n\n/setweight imposta il peso\n\n/setheight: imposta l'altezza\n\n/setblock: imposta il blocco\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non vengono salvate verranno usate le vecchie caratteristiche")
+        bot.reply_to(message, "/newchara <nome>,<forza>,<destrezza>,<intelligenza>: crea un nuovo personaggio ed entra in modalità modifica(la somma delle 4 caratteristiche deve essere 45)\n\n/editchara: entra in modalità modifica\n\n/addatk <nome>,<caratteristica>,<tipo>: aggiunge un attacco di tipo f, a, i. Con una caratteristica base\n\n/addskill <nome>,<livello> aggiunge un abilità\n\n/lvlskill <skill>: aumenta il livello di una skill\n\n/lvlcar <car> aumenta il livello di una caratteristica base (f,d,i,s)\n\n/buyaction: spende punti xp per comprare un azione\n\n/setrace <razza>: imposta la razza\n\n/setclass <classe>: imposta la classe\n\n/setsex <sesso>: imposta il sesso\n\n/setweight <peso>: imposta il peso\n\n/setheight <altezza>: imposta l'altezza\n\n/setblock <blocco>: imposta il blocco\n\n/savechara: salva le modifiche al personaggio. Se le modifiche non vengono salvate verranno usate le vecchie caratteristiche")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message, connection_error)
     except NoArgumentsError:
@@ -1011,6 +1011,11 @@ def setblock(message):
     except Exception as e:
         bot.reply_to(message, error_message)
         print(e)
+
+@bot.message_handler(commands={"helpmaster"})
+def helpmaster(message):
+    if isAdmin(message.from_user.id):
+        bot.reply_to(message, "/ban <utente>: mi fa bannare un utente\n\n/strike <utente>: mi fa dare uno strike ad un utente, a 3 verrà bannato\n\n/givexp <utente>,<quantità>: assegna punti esperienza ad un utente\n\n/masterskill <abilità>,<livello>: aggiunge un livello che vuole ad un'abilità a sua scelta\n\n/mastercar <caratteristica>,<livello> aggiunge un valore a sua scelta alle caratteristiche base (f,d,i,s)\n\n/mastershow <utente>: mostra la scheda di utente a sua scelta")
 
 try:
     f = open("users","rb")
