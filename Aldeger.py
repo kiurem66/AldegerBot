@@ -337,7 +337,7 @@ def rollbot(message):
 @bot.message_handler(commands={"help"})
 def help(message):
     try:
-        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/newchara <nome>,<forza>,<destrezza>,<intelligenza>: crea un nuovo personaggio ed entra in modalità modifica(la somma delle 4 caratteristiche deve essere 45)\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/editmoney <tipo><numero> si possono aggiungere o togliere monete di tipo c,f,p,q (si ha completa libertà, evitare di andare in negativo o di aggiungersi troppe monete, può risultare in uno strike)\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\n/showchara mostra la sua scheda (se non vuole che gli altri giocatori la vedono le condsiglio di farlo in privato)\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.\n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
+        bot.reply_to(message, "/register: mi da il consenso a ricordarmi di lei e a memorizzare la sua scheda\n\n/newchara <nome>,<forza>,<destrezza>,<intelligenza>,<salute>: crea un nuovo personaggio ed entra in modalità modifica(la somma delle 4 caratteristiche deve essere 45)\n\n/helpedit: visualizza i comandi relativi alla modifica della scheda\n\n/deluser serve a farmi dimenticare tutte le informazioni su di lei, da usare in caso voglia uscire dal gruppo o voglia creare un nuovo personaggio\n\n/editmoney <tipo><numero> si possono aggiungere o togliere monete di tipo c,f,p,q (si ha completa libertà, evitare di andare in negativo o di aggiungersi troppe monete, può risultare in uno strike)\n\n/admin: pinga un admin\n\n/admin <messaggio>: fa arrivare un messaggio ad un admin\n\n/roll <dadi>: mi fa tirare dei dadi, la seconda cosa più importante in un GDR\n\n/rolldmg <nome>: mi fa tirare un attacco applicando già i bonus e malus della tabella, a patto che sia presente nella sua scheda ovviamente.\n\n/showchara mostra la sua scheda (se non vuole che gli altri giocatori la vedono le condsiglio di farlo in privato)\n\nCi sono anche alcuni comandi relativi all'ambientazione che non citerò qui per motivi di trama.\n\nAldeger "+version+", magirobot programmato dal dottor Bridge")
     except requests.exceptions.ConnectionError:
         bot.reply_to(message,connection_error)
     except Exception as e:
@@ -492,11 +492,13 @@ def addAttack(message):
             try:
                 name = args[0]
                 base_car = args[1].strip()
+                atype = args[2].strip()
             except:
+                print("a")
                 raise NoArgumentsError
-            atype = args[2].strip()
-            if (atype != "i" and atype != "f" and atype != "i") or (base_car != "f" and base_car != "d" and base_car != "i"):
+            if (atype != "i" and atype != "f" and atype != "a") or (base_car != "f" and base_car != "d" and base_car != "i"):
                 bot.reply_to(message, user_error)
+                print("b")
                 return
             to_add = Attack(name, base_car, atype)
             u.sheet.attacks.append(to_add)
@@ -563,6 +565,11 @@ def givexp(message):
                     u.sheet.xp += to_give
                     if u.sheet.xp < 0:
                         u.sheet.xp = 0
+                    u1 = get_editing(u.id)
+                    if u1 != None:
+                        u1.sheet.xp += to_give
+                        if u1.sheet.xp < 0:
+                            u1.sheet.xp = 0
                     bot.reply_to(message, "Capito signore, sto dando " + str(to_give) + " punti esperienza a " + name)
                     break
             if found == False:
@@ -687,7 +694,7 @@ def lvlskill(message):
                         break
                     s.level += 1
                     u.sheet.xp -= to_spend
-                    bot.reply_to(message,"il livello dell'abilità da lei scelta è stato aumentato a " + str(s.lvl))
+                    bot.reply_to(message,"il livello dell'abilità da lei scelta è stato aumentato a " + str(s.level))
             if not Found:
                 raise NoArgumentsError            
     except requests.exceptions.ConnectionError:
@@ -801,7 +808,7 @@ def masterskill(message):
                 if s.name == arg:
                     Found=True
                     s.level += lvl
-                    bot.reply_to(message,"il livello dell'abilità da lei scelta è stato aumentato a " + str(s.lvl))
+                    bot.reply_to(message,"il livello dell'abilità da lei scelta è stato aumentato a " + str(s.level))
             if not Found:
                 raise NoArgumentsError
     except requests.exceptions.ConnectionError:
