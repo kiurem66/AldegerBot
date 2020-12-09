@@ -620,6 +620,7 @@ def showchara(message):
                 for a in u.sheet.skills:
                     to_print += a.name + " lv: " + str(a.level) + "\n"
                 to_print += "\nCuori: " + str(u.sheet.platinum) + "\nFiorini: " + str(u.sheet.gold) + "\nPunte: " + str(u.sheet.silver) + "\nQuarti: " +str(u.sheet.copper)
+                to_print += "\n\nPunti Esperienza: " + str(u.sheet.xp)
                 bot.reply_to(message, to_print)
             
     except requests.exceptions.ConnectionError:
@@ -845,6 +846,7 @@ def mastershow(message):
                         for a in u.sheet.skills:
                             to_print += a.name + " lv: " + str(a.level) + "\n"
                         to_print += "\nCuori: " + str(u.sheet.platinum) + "\nFiorini: " + str(u.sheet.gold) + "\nPunte: " + str(u.sheet.silver) + "\nQuarti: " +str(u.sheet.copper)
+                        to_print += "\n\nPunti Esperienza: " + str(u.sheet.xp)
                         bot.reply_to(message, to_print)
                     break
             if not found:
