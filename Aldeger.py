@@ -1034,5 +1034,6 @@ except:
     users = []
 print("Aldeger is running")
 while True:
+    bot.delete_webhook()
     bot.polling(none_stop=True)
     print("bot reboot")
